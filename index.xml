@@ -5,7 +5,7 @@
       <metadata>
         <description>Framework, Hubs, Menus, Diagnostics (Install Doctor/Smoke Test) and all essential scripts.</description>
       </metadata>
-      <version name="3.0.0" author="DF95" time="1765615306">
+      <version name="3.0.1" author="DF95" time="1765746561">
         <source file="Menus/DF95_AI_Toolbar.ReaperMenuSet">https://raw.githubusercontent.com/IfeelLikeSnow/df95-ifls/main/Menus/DF95_AI_Toolbar.ReaperMenuSet</source>
         <source file="Menus/DF95_CoToolbar.ReaperMenuSet">https://raw.githubusercontent.com/IfeelLikeSnow/df95-ifls/main/Menus/DF95_CoToolbar.ReaperMenuSet</source>
         <source file="Menus/DF95_CoToolbar_Context.ReaperMenuSet">https://raw.githubusercontent.com/IfeelLikeSnow/df95-ifls/main/Menus/DF95_CoToolbar_Context.ReaperMenuSet</source>
@@ -747,7 +747,11 @@
         <source file="Support/DF95_FX_Environment_Snapshot/reaper-fxtags.ini">https://raw.githubusercontent.com/IfeelLikeSnow/df95-ifls/main/Support/DF95_FX_Environment_Snapshot/reaper-fxtags.ini</source>
         <source file="Support/DF95_FX_Environment_Snapshot/reaper-jsfx.ini">https://raw.githubusercontent.com/IfeelLikeSnow/df95-ifls/main/Support/DF95_FX_Environment_Snapshot/reaper-jsfx.ini</source>
         <source file="Support/DF95_FX_Environment_Snapshot/reaper-vstplugins64.ini">https://raw.githubusercontent.com/IfeelLikeSnow/df95-ifls/main/Support/DF95_FX_Environment_Snapshot/reaper-vstplugins64.ini</source>
-      </version>
+      <changelog><![CDATA[v3.0.1
+- ReaPack index hygiene: canonicalized paths (Core/, Tools/) and FX chain extension (.RfxChain)
+- Removed duplicate <source> entries to prevent 404 installs
+- Improves ReaPack reliability on case-sensitive GitHub raw URLs
+]]></changelog></version>
     </reapack>
   </category>
   <category name="DF95/02 Tools">
