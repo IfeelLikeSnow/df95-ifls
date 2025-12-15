@@ -19,49 +19,19 @@
 -- V2 migration: avoid legacy namespace require("IfeelLikeSnow.*")
 -- Load modules directly from IFLS/DF95 path (portable, no package.path dependency)
 local __df95_base = reaper.GetResourcePath():gsub("\\","/")
-
--- Option B (robust): load optional siblings *only if they exist*.
--- Rationale: This file is "Standalone Full Definition" and should not hard-fail
--- when generated sidecar modules are absent. Also avoids brittle absolute paths.
-local function __df95_file_exists(p)
-  local f = io.open(p, "r")
-  if f then f:close() return true end
-  return false
-end
-
-local function __df95_script_dir()
-  local info = debug.getinfo(1, "S")
-  local src = info and info.source or ""
-  local path = src:match("^@(.+)$")
-  if not path then return "" end
-  -- normalize slashes and strip filename
-  path = path:gsub("\\","/")
-  return (path:match("^(.*)/") or "")
-end
-
-local function __df95_try_dofile_from_dir(dir, filename)
-  if not dir or dir == "" then return nil end
-  local full = dir .. "/" .. filename
-  if not __df95_file_exists(full) then
-    return nil
-  end
+local function __df95_dofile(rel)
+  local full = __df95_base .. rel
   local ok, res = pcall(dofile, full)
   if not ok then
-    -- Console only: don't block users with modal dialogs.
-    if reaper and reaper.ShowConsoleMsg then
-      reaper.ShowConsoleMsg("[DF95][WARN] optional dofile failed: " .. tostring(full) .. "\n" .. tostring(res) .. "\n")
-    end
+    reaper.ShowMessageBox("Konnte Modul nicht laden:\n" .. tostring(full) .. "\n\nFehler:\n" .. tostring(res),
+                          "DF95 MetaCore Loader", 0)
     return nil
   end
   return res
 end
 
-local __dir = __df95_script_dir()
-
--- Optional: if present, allow sidecar files to populate MetaCore.vst / MetaCore.vsti.
--- If absent, this file still defines MetaCore inline below.
-local __vst  = __df95_try_dofile_from_dir(__dir, "DF95_MetaCore_VST_All_vst.lua")
-local __vsti = __df95_try_dofile_from_dir(__dir, "DF95_MetaCore_VST_All_vsti.lua")
+__df95_dofile("/Scripts/IFLS/DF95/DF95_MetaCore_VST_All_vst.lua")
+__df95_dofile("/Scripts/IFLS/DF95/DF95_MetaCore_VST_All_vsti.lua")
 local MetaCore = {
 
 
@@ -12864,7 +12834,7 @@ sc_autofilter = {
 
 
 
--- MetaCore.vst filled below (auto-split from flat definitions)
+MetaCore.vst = -- legacy require removed (see V2 loader below)
 
 
 
@@ -14747,67 +14717,10 @@ sc_autofilter = {
       },
     },
   },
--- MetaCore.vsti filled below (auto-split from flat definitions)
+MetaCore.vsti = -- legacy require removed (see V2 loader below)
 
 
 
-
---------------------------------------------------------------------
--- Option B: Build MetaCore.vst / MetaCore.vsti from the flat table
--- This file is meant to be "Standalone Full Definition". If the optional
--- sidecar files are missing, we still expose the expected API.
---------------------------------------------------------------------
-if type(MetaCore.vst) ~= "table" or type(MetaCore.vsti) ~= "table" then
-  local vst, vsti = {}, {}
-  for k, def in pairs(MetaCore) do
-    if type(def) == "table" and type(def.id) == "string" and def.type then
-      local display = tostring(def.display or "")
-      local is_vsti = false
-
-      -- Heuristic 1: explicit marker used throughout this file
-      if display:find("!!!VSTi", 1, true) then
-        is_vsti = true
-      end
-
-      -- Heuristic 2: roles include Instrument/Synth (if provided)
-      if not is_vsti and type(def.roles) == "table" then
-        for _, r in ipairs(def.roles) do
-          if r == "Instrument" or r == "Synth" then
-            is_vsti = true
-            break
-          end
-        end
-      end
-
-      -- Heuristic 3: type hints
-      if not is_vsti then
-        local t = tostring(def.type)
-        if t == "synth" or t:find("instrument", 1, true) then
-          is_vsti = true
-        end
-      end
-
-      if is_vsti then
-        vsti[k] = def
-      else
-        vst[k] = def
-      end
-    end
-  end
-
-  -- Prefer optional sidecar content if it returned a table
-  if type(__vst) == "table" then
-    MetaCore.vst = (__vst.vst and type(__vst.vst)=="table") and __vst.vst or __vst
-  else
-    MetaCore.vst = vst
-  end
-
-  if type(__vsti) == "table" then
-    MetaCore.vsti = (__vsti.vsti and type(__vsti.vsti)=="table") and __vsti.vsti or __vsti
-  else
-    MetaCore.vsti = vsti
-  end
-end
 
 --------------------------------------------------------------------
 -- DF95 MetaCore v15 - Optimizations & Helper APIs (modular build)
